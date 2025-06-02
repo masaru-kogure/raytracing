@@ -1,13 +1,13 @@
 ##################################################
 ## Discripition
-## This program calculates gravity wave paths by using 4th order Lunge Kutta.
+## This program calculates gravity wave paths by using 4th-order Runge-Kutta.
 ## It is translated from the IDL code presented in Kogure et al. (2018). 
-## This code is developted in Python 3.8.19
+## This code is developed in Python 3.8.19
 ##################################################
 ## Terms and Conditions of Use  
 ## This program is free to use for academic, non-commercial purposes. 
 ## Modification of the code is not recommended; any moddifications are made at your own risk. 
-## If used in publications, you must cite the specific referecences (see the following reference).
+## If used in publications, you must cite the specific references (see the following reference).
 ## We strongly encourage users to contact us for discussion before using the result of this software in publications, 
 ## to prevent misuse or misinterpretation of the output.
 ## The developers and their affiliated organizations are not responsible for any damages arising from use of the software.
@@ -29,8 +29,8 @@ r = 6.3781 * 1.e6 #[m] Mean radius of the earth
 O2 = 0.00014584231#7.2921159 * 1e-5 * 2 #rad/s
 const = 29.26 # m/K
 g = 9.80665 #[m/s^2]
-class lunge_kutta4:
-    def main_lunge(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, gome, k, l, lon, lat, time, z, lonM, latM, timeM, zM, phi, ram, dt, dlat, dlon):
+class runge_kutta4:
+    def main_runge(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, gome, k, l, lon, lat, time, z, lonM, latM, timeM, zM, phi, ram, dt, dlat, dlon):
         import numpy as np
         #-------firs step------------------
         if np.isnan(zM):
@@ -109,7 +109,7 @@ class lunge_kutta4:
         HM = np.interp(zM, zM1, HM1)
         return dudxM, dvdxM, dudyM, dvdyM, uM, vM, wM, NFM, HM
    
-    def lunge_step(H, gome, k, u, l, v, latM, lonM, NF, w, dudx, dvdx, dudy, dvdy, zM, timeM, step, dt):
+    def runge_step(H, gome, k, u, l, v, latM, lonM, NF, w, dudx, dvdx, dudy, dvdy, zM, timeM, step, dt):
 
         dt_2 = dt * 0.5
         dt7200 = dt/7200.
