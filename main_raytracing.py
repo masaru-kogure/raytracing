@@ -7,7 +7,7 @@
 ## Terms and Conditions of Use  
 ## This program is free to use for academic, non-commercial purposes. 
 ## Modification of the code is not recommended; any moddifications are made at your own risk. 
-## If used in publications, you must cite the specific referecences (see the following reference).
+## If used in publications, you must cite the specific references (see the following reference).
 ## We strongly encourage users to contact us for discussion before using the result of this software in publications, 
 ## to prevent misuse or misinterpretation of the output.
 ## The developers and their affiliated organizations are not responsible for any damages arising from use of the software.
@@ -32,14 +32,14 @@ from random import weibullvariate
 import numpy as np
 from derivation import derivation
 from meteo_para_v2 import meteo_para
-from lunge_kutta4 import lunge_kutta4
+from runge_kutta4 import runge_kutta4
 from kernel_box import kernel_box
 from scipy import signal
 from netCDF4 import Dataset
 import netCDF4 as nc
 import matplotlib.pyplot as plt
 import glob
-from lunge_kutta4 import lunge_kutta4
+from runge_kutta4 import runge_kutta4
 
 
 date = "20210812"
@@ -166,7 +166,7 @@ for kh, k, l in zip(kh_list, k_list, l_list):
             timeM1 = timeM
             
 
-            dudx1, dudy1, dvdx1, dvdy1, u1, v1, w1, NF1, H1 = lunge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time1, z, lonM, latM, timeM, zM, dlat, dlon)
+            dudx1, dudy1, dvdx1, dvdy1, u1, v1, w1, NF1, H1 = runge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time1, z, lonM, latM, timeM, zM, dlat, dlon)
             f = O2 * np.sin(latM/180*np.pi)
             ome = np.sqrt(meteo_para.cal_dis_ral( k1, l1, [], f, NF1, H1, m = m1))
             gome = ome + (u1 * k1 + v1 * l1)
@@ -182,7 +182,7 @@ for kh, k, l in zip(kh_list, k_list, l_list):
             dz = 0.1
             try:        
                 while dz:
-                    dy, dx, dz, dk, dl, u1, v1, w1, NF1, ome1, H1 = lunge_kutta4.main_lunge(dudx, dvdx, dudy, dvdy, u, v, wv, NF, H, gome, k1, l1, lon, lat, time1, z, lonM1, latM1, timeM1, zM1, phi, ram, dt, dlat, dlon)
+                    dy, dx, dz, dk, dl, u1, v1, w1, NF1, ome1, H1 = runge_kutta4.main_kunge(dudx, dvdx, dudy, dvdy, u, v, wv, NF, H, gome, k1, l1, lon, lat, time1, z, lonM1, latM1, timeM1, zM1, phi, ram, dt, dlat, dlon)
                     lonM1 = lonM1 + dx
                     latM1 = latM1 + dy
                     zM1 = zM1 + dz 
@@ -211,7 +211,7 @@ for kh, k, l in zip(kh_list, k_list, l_list):
                         omeM = np.append(omeM, ome1)        
                     i = i + 1
             except:
-                N_full, Ri, mM = lunge_kutta4.instability(Tin, NFM, uM, vM, zM, HM, latM, lonM, timeM, omeM, kM, lM, m1, rho, t, z, dlat, dlon, time1, lat, lon )
+                N_full, Ri, mM = runge_kutta4.instability(Tin, NFM, uM, vM, zM, HM, latM, lonM, timeM, omeM, kM, lM, m1, rho, t, z, dlat, dlon, time1, lat, lon )
                 sigma = np.abs(np.gradient(mM, zM[0:-1])/(mM**2))
                 op = np.where(Ri <= 0.25)[0]
                 if op.size > 0:
