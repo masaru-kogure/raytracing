@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ##################################################
 ## Discripition
 ## This program calculates gravity wave paths and instability points.
@@ -28,23 +29,34 @@
 ## Date: Last Update: 2025/06/02
 ##################################################
 
+=======
+>>>>>>> fb946b6 (Update local files)
 from random import weibullvariate
 import numpy as np
 from derivation import derivation
 from meteo_para_v2 import meteo_para
+<<<<<<< HEAD
 from runge_kutta4 import runge_kutta4
+=======
+>>>>>>> fb946b6 (Update local files)
 from kernel_box import kernel_box
 from scipy import signal
 from netCDF4 import Dataset
 import netCDF4 as nc
 import matplotlib.pyplot as plt
 import glob
+<<<<<<< HEAD
 from runge_kutta4 import runge_kutta4
 
+=======
+from lunge_kutta4_JA_v2  import lunge_kutta4
+from func_plot_v13 import plot_2D
+from func_plot_v13 import plot_1D
+>>>>>>> fb946b6 (Update local files)
 
 date = "20210812"
 dt = 60.
-her = 17.
+her = 17
 mn = 0.
 ihh = ((np.int32(date[6::])) - 1) + (np.int32(her) - 1)
 gome = []
@@ -52,17 +64,17 @@ gome = []
 #----------------read data----------------
 i_date = 0
 filename = "/RAID0/home/kogure/data/ERA5/physics/ERA5_"+ date[::6] + ".nc"#test
-figuresave = '/RAID0/home/kogure/figure/ERA5/heavy_rain_2021/'
 nd = filename.find('2021')
 year = date[0:4]
 mm = date[4:6]
 dd = date[6:8]
-time1 = her + np.arange(7)
+time1 = her + np.arange(20)
 #----------------para---------------------------
 global const, O2, r, dt7200, dt3600, dt_2, g0
 const = 29.26 # m/K
 O2 = 0.00014584231#7.2921159 * 1e-5 * 2 #rad/s
 r = 6.3781 * 1.e6 #[m] Mean radius of the earth
+#dt7200 =  dt/7200.
 dt3600 =  dt/3600.
 dt_2 = dt  * 0.5
 g0 = 9.80665 #[m/s^2]
@@ -119,53 +131,205 @@ for i_high in range(NERA[1]):
     for i_time in range(NERA[0]):
         for i_lat in range(NERA[2]):
             dram1 = dram * np.abs(np.cos(phi[i_lat]))
+            #ord, Wn = signal.buttord(1/4/dphi, 1/2/dphi, 3, 40, fs = 1/dram1 )
+            #b, a = signal.butter( ord, Wn, 'low', fs = 1/dram1)
+            
+            #X = np.arange((NERA[3] - 1)/2) + 1
+            #is_N_even = (np.mod(NERA[3],2) == 0)
+            #if is_N_even:
+            #    wave = np.hstack([0, X, NERA[3]/2, -(NERA[3]/2 + 1) + X])/(dram1 * NERA[3])
+            #else:
+            #    wave = np.hstack([0, X, -(NERA[3]/2 + 1) + X])/(dram1 * NERA[3]) 
+            #https://note.nkmk.me/python-numpy-concatenate-stack-block/
+            #wb, h = signal.freqs(b, a, wave)
+            #plt.plot(wave,wb)
+            #plt.show()
             
             dudx[i_time, i_high, i_lat,:] = derivation.fft_diff(u[i_time, i_high, i_lat,:], dram1, idel_filter=1/(2 * dphi))
             dvdx[i_time, i_high, i_lat,:] = derivation.fft_diff(v[i_time, i_high, i_lat,:], dram1, idel_filter=1/(2 * dphi))
+            #if i_lat == 300: 
+            #    plt.plot(lon, dudx[i_time, i_high, i_lat,:])
+            #    plt.show()
         for i_lon in range(NERA[3]):
             dudy[i_time, i_high, :, i_lon] = derivation.fft_diff(u[i_time, i_high, :, i_lon] * wc, dphi)
             dvdy[i_time, i_high, :, i_lon] = derivation.fft_diff(v[i_time, i_high, :, i_lon] * wc, dphi)
+            #if i_lon == 300: 
+            #    plt.plot(lon, dudy[i_time, i_high, :, i_lon])
+            #    plt.show()
 
 
+#kh = "469"
+#k = 2 * np.pi * 0.0020576131687242765 * 1.e-3
+#l = 2 * np.pi * 0.0005527915975677203 * 1.e-3
+#kh = "285"
+#k = 2 * np.pi * 0.003086419753086417 * 1.e-3
+#l = 2 * np.pi * 0.0016583747927031475 * 1.e-3
+#kh = "135"
+#k = 2 * np.pi * 0.007201646090534979 * 1.e-3
+#l = 2 * np.pi * 0.0016583747927031518 * 1.e-3
+#kh = "185"
+#k = 2 * np.pi * 0.0051440329218107065 * 1.e-3
+#l = 2 * np.pi * 0.0016583747927031518 * 1.e-3
 kh_list = ["469", "285", "135", "185"] 
 k_list = np.array([2 * np.pi * 0.0020576131687242765 * 1.e-3, 2 * np.pi * 0.003086419753086417 * 1.e-3, 2 * np.pi * 0.007201646090534979 * 1.e-3, 2 * np.pi * 0.0051440329218107065 * 1.e-3])
 l_list = np.array([2 * np.pi * 0.0005527915975677203 * 1.e-3, 2 * np.pi * 0.0016583747927031475 * 1.e-3, 2 * np.pi * 0.0016583747927031518 * 1.e-3, 2 * np.pi * 0.0016583747927031518 * 1.e-3])
 
 #lonMlist = [130.]
 #latMlist = [33.0]
-lonMlist = [127.5, 130., 132.5]
-latMlist = [30, 31.5, 33.0,34.5]
-pltnum = 12
+#lonMlist = [129.5, 132.5]#[129.5, 132.5]
+lonMlist = [129.5, 132.5]
+latMlist = [31.5, 33.0]
+pltnum = np.array(len(lonMlist) * len(latMlist))
+lambdaz = [12, 20, 30, 40]#20#(30)
+Tamp = [14, 3, 1.5, 0.54]#2 * np.sqrt(2)#4#(2 * np.sqrt(2))
+#12, 20, 30 km
+#8, 6, 3 K K
+#list = ["direction"]
+list = ["map", "direction", "u", "v", "N", "time", "m"]
+for ilist in list:
+    for ilambdaz, iTamp in zip(lambdaz, Tamp):
+        for kh, k, l in zip(kh_list, k_list, l_list):
+            inum = 0
+            axs= []
+            axs1 = []
+            axs2 = []
+            axs3 = []
+            axs4 = []
+            axs5 = []
+            axs6 = []
+            for lonM in lonMlist:
+                lonMs = lonM
+                for latM in latMlist:
+                    latMs = latM
+                    if (lonMs == lonMlist[0]) and (latMs == latMlist[0]) :
+                        legend1 = [str(lonMs)+' E, ' + str(latMs) + ' N' ]
+                    timeM = her + mn/60
+                    zM = 35 * 1e3
+                    m1 = -2*np.pi/(ilambdaz * 1e3)
+                    Tin = iTamp
+                    lonM = lonMs
+                    latM = latMs
+                    lonM1 = lonM
+                    latM1 = latMs
+                    zM1 = zM
+                    kM = k
+                    lM = l
+                    k1 = kM
+                    l1 = lM
+                    timeM1 = timeM
+                    
 
-        
-for kh, k, l in zip(kh_list, k_list, l_list):
-    inum = 0
-    axs= []
-    axs1 = []
-    axs2 = []
-    axs3 = []
-    for lonM in lonMlist:
-        lonMs = lonM
-        for latM in latMlist:
-            latMs = latM
-            if (lonMs == lonMlist[0]) and (latMs == latMlist[0]) :
-                legend1 = [str(lonMs)+' E, ' + str(latMs) + ' N' ]
-            timeM = her + mn/60
-            zM = 35 * 1e3
-            m1 = -2*np.pi/(20 * 1e3)
-            Tin = 5.
-            lonM = lonMs
-            latM = latMs
-            lonM1 = lonM
-            latM1 = latMs
-            zM1 = zM
-            kM = k
-            lM = l
-            k1 = kM
-            l1 = lM
-            timeM1 = timeM
-            
+                    dudx1, dudy1, dvdx1, dvdy1, u1, v1, w1, NF1, H1 = lunge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time1, z, lonM, latM, timeM, zM, dlat, dlon)
+                    f = O2 * np.sin(latM/180*np.pi)
+                    ome = np.sqrt(meteo_para.cal_dis_ral( k1, l1, [], f, NF1, H1, m = m1))
+                    gome = ome + (u1 * k1 + v1 * l1)
+                    print(lonM, latM)
 
+                    i = 0
+                    uM = np.NAN
+                    vM = np.NAN
+                    wM = np.NAN
+                    NFM = np.NAN
+                    HM = np.NAN
+                    omeM = np.NAN
+                    dz = 0.1
+                    try:        
+                        while dz:
+                            dy, dx, dz, dk, dl, u1, v1, w1, NF1, ome1, H1 = lunge_kutta4.main_lunge(dudx, dvdx, dudy, dvdy, u, v, wv, NF, H, gome, k1, l1, lon, lat, time1, z, lonM1, latM1, timeM1, zM1, phi, ram, dt, dlat, dlon)
+                            lonM1 = lonM1 + dx
+                            latM1 = latM1 + dy
+                            zM1 = zM1 + dz 
+                            k1 = k1 + dk
+                            l1 = l1 + dl
+                            timeM1 = timeM1 + dt3600 
+                            lonM = np.append(lonM, lonM1)
+                            latM = np.append(latM, latM1)
+                            zM = np.append(zM, zM1 )
+                            kM = np.append(kM, k1)
+                            lM = np.append(lM, l1)
+                            timeM = np.append(timeM, timeM1)
+                            if i == 0 :
+                                uM = u1
+                                vM = v1
+                                wM = w1
+                                NFM = NF1
+                                HM = H1
+                                omeM = ome1
+                            else:
+                                uM = np.append(uM, u1)
+                                vM = np.append(vM, v1)
+                                wM = np.append(wM, w1)
+                                NFM = np.append(NFM, NF1)
+                                HM = np.append(HM, H1)
+                                omeM = np.append(omeM, ome1)        
+                            i = i + 1
+                                #print(i)
+    
+                    except:
+                        N_full, Ri, mM = lunge_kutta4.instability(Tin, NFM, uM, vM, zM, HM, latM, lonM, timeM, omeM, kM, lM, m1, rho, t, z, dlat, dlon, time1, lat, lon )
+                        sigma = np.abs(np.gradient(mM, zM[0:-1])/(mM**2))
+                        op = np.where(Ri < 0.25)[0]
+                        cc = np.where(Ri < 0.)[0]
+                        if op.size > 0:
+                            op_min = op.min()
+                        else:
+                            op_min = np.nan
+                        if cc.size > 0:
+                            cc_min = cc.min()
+                        else:
+                            cc_min = 0     
+                            
+                            #print(zM[op_min])
+                            #print(op_min)
+                        
+                        mmo1 = np.abs(2 * np.pi/mM * 1.e-3)
+                        #nd = ~np.isnan(lonM)
+                        nd1 = (mmo1 > 1)
+                        #print(timeM[op_min])
+                        #print(timeM[cc_min])
+                        #print(timeM[-1])
+                        zM = zM[0:len(nd1) ]
+                        dir = 90 - (np.arctan2(lM, kM)/(np.pi) * 180)
+                        
+                        if (lonMs != lonMlist[0]) or (latMs != latMlist[0]):
+                            legend1.append(str(lonMs)+' E, ' + str(latMs) + ' N')
+                        if ilist == "map":
+                            lonM = lonM[0:len(nd1) ]
+                            latM = latM[0:len(nd1) ]
+                            axs = plot_1D.raytrace_multi_vari_1D_plot( lonM, latM, zM * 1.e-3, np.array(lonM[op_min]), np.array(latM[op_min]), np.array(zM[op_min])* 1.e-3, np.array(lonM[cc_min]), np.array(latM[cc_min]), np.array(zM[cc_min])* 1.e-3, pltnum, inum, figtitle = [str(np.int16(her))+ '_' +kh  +'_' + np.str_(ilambdaz) +"_map"], title = [kh +' ' + np.str_(ilambdaz), 'lon', 'lat'], figuresave = figuresave, range1 = [35, 100], hori_range = [120, 140, 28, 40], size = [7,7], cmap ='gist_rainbow', axs= axs)
+                        if ilist == "direction":
+                            dir = dir[0:len(nd1) ]
+                            axs1 = plot_1D.ray_normal_multi_vari_1D_plot( dir, zM * 1.e-3, dir[op_min], zM[op_min] * 1.e-3, dir[cc_min], zM[cc_min] * 1.e-3, pltnum,inum, legend = legend1, figtitle = [str(np.int16(her)) + '_'+kh + '_direction' + '_' + np.str_(ilambdaz)], title = [kh +' ' + np.str_(ilambdaz) + ' direction', 'height', 'angle'], figuresave = figuresave, axs = axs1,  tfsize= 28, fsize = 24, fticksize = 22, cir_size = 30, hori_range = [60, 80,35,100])
+                        if ilist == "u":
+                            uM = uM[0:len(nd1) ]
+                            zM = zM[0:len(nd1) ]
+                            axs2 = plot_1D.ray_normal_multi_vari_1D_plot( uM, zM * 1.e-3, uM[op_min], zM[op_min] * 1.e-3, uM[cc_min], zM[cc_min] * 1.e-3, pltnum,inum, legend = legend1, figtitle = [str(np.int16(her))+ '_' +kh + '_zonal_wind'+ '_' + np.str_(ilambdaz)], title = [kh +' ' + np.str_(ilambdaz) + ' zonal wind', 'height', 'm/s'], figuresave = figuresave, axs = axs2,  tfsize= 28, fsize = 24, fticksize = 22, cir_size = 30, hori_range= [-75,125,35,100])
+                        if ilist == "v":
+                            nd = ~np.isnan(vM)
+                            vM = vM[0:len(nd1) ]
+                            zM = zM[0:len(nd1) ]
+                            axs3 = plot_1D.ray_normal_multi_vari_1D_plot( vM, zM * 1.e-3, vM[op_min], zM[op_min] * 1.e-3, vM[cc_min], zM[cc_min] * 1.e-3, pltnum,inum, legend = legend1, figtitle = [str(np.int16(her))+ '_' +kh + '_meridional_wind'+ '_' + np.str_(ilambdaz)], title = [kh +' ' + np.str_(ilambdaz)  + ' meridional wind', 'height', 'm/s'], figuresave = figuresave, axs = axs3, tfsize= 28, fsize = 24, fticksize = 22, cir_size = 30, hori_range= [-75,125,35,100])
+                        if ilist == "N":
+                            nd = ~np.isnan(NFM)
+                            NFM = NFM[0:len(nd1) ]
+                            zM = zM[0:len(nd1) ]
+                            axs4 = plot_1D.ray_normal_multi_vari_1D_plot( NFM * 1e4, zM * 1.e-3, NFM[op_min]* 1e4, zM[op_min] * 1.e-3, NFM[cc_min]* 1e4, zM[cc_min] * 1.e-3, pltnum,inum, legend = legend1, figtitle = [str(np.int16(her)) + '_' +kh + '_N' + '_' + np.str_(ilambdaz)], title = [kh +' ' + np.str_(ilambdaz)  + ' sqared N', 'Height [km]', r'${10^{-4}}$ ${\times}$ s$^{-2}$'], figuresave = figuresave, axs = axs4,  tfsize= 28, fsize = 24, fticksize = 22, cir_size = 30, hori_range= [1,20,35,100], xlog = 1)
+                        if ilist == "time":
+                            #nd = ~np.isnan(timeM)
+                            timeM = timeM[0:len(nd1) ]
+                            zM = zM[0:len(nd1) ]
+                            axs5 = plot_1D.ray_normal_multi_vari_1D_plot( timeM, zM * 1.e-3, timeM[op_min], zM[op_min] * 1.e-3, timeM[cc_min], zM[cc_min] * 1.e-3, pltnum,inum, legend = legend1, figtitle = [str(np.int16(her)) + '_' +kh + '_time' + '_' + np.str_(ilambdaz)], title = [kh +' ' + np.str_(ilambdaz)  +  ' time', 'Height [km]', 'Time [UT]'], figuresave = figuresave, axs = axs5,  tfsize= 28, fsize = 24, fticksize = 22, cir_size = 30, hori_range= [17,24,35,100])
+                        if ilist == "m":
+                            #nd = ~np.isnan(timeM)
+                            zM = zM[0:len(nd1) ]
+                            mmo1 = mmo1[0:len(nd1) ]
+                            axs6 = plot_1D.ray_normal_multi_vari_1D_plot( mmo1, zM * 1.e-3, mmo1[op_min], zM[op_min] * 1.e-3, mmo1[cc_min], zM[cc_min] * 1.e-3, pltnum,inum, legend = legend1, figtitle = [str(np.int16(her)) + '_' + kh + '_vertical_wavelength' + '_' + np.str_(ilambdaz)], title = [kh +' ' + np.str_(ilambdaz)  + ' time', 'Height [km]', 'Vertical wavelenth [km]'], figuresave = figuresave, axs = axs6,  tfsize= 28, fsize = 24, fticksize = 22, cir_size = 30, hori_range= [0,50,35,100])
+
+    #[1, 7, 30, 95, 100]
+                        inum += 1
+                        print('end')
+
+<<<<<<< HEAD
             dudx1, dudy1, dvdx1, dvdy1, u1, v1, w1, NF1, H1 = runge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time1, z, lonM, latM, timeM, zM, dlat, dlon)
             f = O2 * np.sin(latM/180*np.pi)
             ome = np.sqrt(meteo_para.cal_dis_ral( k1, l1, [], f, NF1, H1, m = m1))
@@ -224,3 +388,8 @@ for kh, k, l in zip(kh_list, k_list, l_list):
                 print('end')
 print('end')
                 
+=======
+
+print('end')
+                        
+>>>>>>> fb946b6 (Update local files)

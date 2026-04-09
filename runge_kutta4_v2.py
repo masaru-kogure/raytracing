@@ -1,12 +1,12 @@
 ##################################################
-## Discripition
-## This program calculates gravity wave paths by using 4th-order Runge-Kutta.
+## Description
+## This program calculates gravity-wave paths using a fourth-order Runge-Kutta method.
 ## It is translated from the IDL code presented in Kogure et al. (2018). 
-## This code is developed in Python 3.8.19
+## This code is maintained for Python 3.
 ##################################################
 ## Terms and Conditions of Use  
 ## This program is free to use for academic, non-commercial purposes. 
-## Modification of the code is not recommended; any moddifications are made at your own risk. 
+## Modification of the code is not recommended; any modifications are made at your own risk. 
 ## If used in publications, you must cite the specific references (see the following reference).
 ## We strongly encourage users to contact us for discussion before using the result of this software in publications, 
 ## to prevent misuse or misinterpretation of the output.
@@ -18,70 +18,65 @@
 #### Kogure, M., Nakamura, T., Ejiri, M. K., Nishiyama, T., Tomikawa, Y., & Tsutsumi, M. (2018). Effects of horizontal wind structure on a gravity wave event in the middle atmosphere over Syowa (69°S, 40°E), the Antarctic. Geophysical Research Letters, 45, 5151–5157. https://doi.org/10.1029/2018GL078264
 ##################################################
 ## Author: Masaru Kogure
-## Version: 3.0.1
+## Version: 3.1.0
 ## Email: masarukogure@yonsei.ac.kr
-## Date: Last Update: 2025/06/02
+## Date: Last Update: 2026/04/09
+## The latest bugfix information can be found in "read_me.txt".
 ##################################################
 import numpy as np
-from meteo_para_v2 import meteo_para
+from meteo_para_v3 import meteo_para
 global r, O2, const
 r = 6.3781 * 1.e6 #[m] Mean radius of the earth
 O2 = 0.00014584231#7.2921159 * 1e-5 * 2 #rad/s
 const = 29.26 # m/K
 g = 9.80665 #[m/s^2]
-
 class runge_kutta4:
-    def main_runge(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, gome, k, l, lon, lat, time, z, lonM, latM, timeM, zM, phi, ram, dt, dlat, dlon):
-
-class lunge_kutta4:
-    def main_lunge(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, gome, k, l, lon, lat, time, z, lonM, latM, timeM, zM, phi, ram, dt, dlat, dlon, Cs2 = None):
-
+    def main_runge(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, gome, k, l, lon, lat, time, z, lonM, latM, timeM, zM, phi, ram, dt, dlat, dlon, Cs2 = None):
         import numpy as np
-        #-------firs step------------------
+        #-------first step-----------------
         if np.isnan(zM):
-            print("dame")
-        dudx1, dudy1, dvdx1, dvdy1, u1, v1, w1, NF1, H1 = lunge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time, z, lonM, latM, timeM, zM, dlat, dlon, Cs2 = Cs2)
+            return (np.nan, np.nan, np.nan, np.nan, np.nan,
+                    np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan)
+        f1, b1, dudx1, dvdx1, dudy1, dvdy1, u1, v1, w1, NF1, H1, Cs21 = runge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time, z, lonM, latM, timeM, zM, dlat, dlon, Cs2 = Cs2)
         if np.isnan(zM):
-            print("dame")
+            return np.nan, np.nan, np.nan, np.nan, np.nan, u1, v1, w1, NF1, np.nan, H1, Cs21
         step = 1
-        zM2, lonM2, latM2, timeM2, k2, l2, ug1, vg1, wg1, ome1, dk1 ,dl1 = lunge_kutta4.lunge_step(H1, gome, k, u1, l, v1, latM, lonM, NF1, w1, dudx1, dvdx1, dudy1, dvdy1, zM, timeM, step, dt)
+        zM2, lonM2, latM2, timeM2, k2, l2, ug1, vg1, wg1, ome1, dk1 ,dl1 = runge_kutta4.runge_step(H1, gome, k, k, u1, l, l, v1, latM, lonM, NF1, w1, dudx1, dvdx1, dudy1, dvdy1, zM, timeM, step, dt, f1, b1, Cs2 = Cs21)
         if np.isnan(zM2):
-            print("dame") 
-        dudx2, dudy2, dvdx2, dvdy2, u2, v2, w2, NF2, H2 = lunge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time, z, lonM2, latM2, timeM2, zM2, dlat, dlon, Cs2 = Cs2)
+            return zM2, zM2, zM2, zM2, zM2, u1, v1, w1, NF1, ome1, H1, Cs21
+        f2, b2, dudx2, dvdx2, dudy2, dvdy2, u2, v2, w2, NF2, H2, Cs22 = runge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time, z, lonM2, latM2, timeM2, zM2, dlat, dlon, Cs2 = Cs2)
 
         step = 2
-        zM3, lonM3, latM3, timeM3, k3, l3, ug2, vg2, wg2, ome2, dk2 ,dl2 = lunge_kutta4.lunge_step(H2, gome, k2, u2, l2, v2, latM2, lonM2, NF2, w2, dudx2, dvdx2, dudy2, dvdy2, zM2, timeM2, step, dt)
+        zM3, lonM3, latM3, timeM3, k3, l3, ug2, vg2, wg2, ome2, dk2 ,dl2 = runge_kutta4.runge_step(H2, gome, k, k2, u2, l, l2, v2, latM, lonM, NF2, w2, dudx2, dvdx2, dudy2, dvdy2, zM, timeM, step, dt, f2, b2, Cs2 = Cs22)
         if np.isnan(zM3):
-            print("dame")  
-        dudx3, dudy3, dvdx3, dvdy3, u3, v3, w3, NF3, H3 = lunge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time, z, lonM3, latM3, timeM3, zM3, dlat, dlon, Cs2 = Cs2)
+            return zM3, zM3, zM3, zM3, zM3, u1, v1, w1, NF1, ome1, H1, Cs21
+        f3, b3, dudx3, dvdx3, dudy3, dvdy3, u3, v3, w3, NF3, H3, Cs23 = runge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time, z, lonM3, latM3, timeM3, zM3, dlat, dlon, Cs2 = Cs2)
 
         step = 3
-        zM4, lonM4, latM4, timeM4, k4, l4, ug3, vg3, wg3, ome3, dk3 ,dl3 = lunge_kutta4.lunge_step(H3, gome, k3, u3, l3, v3, latM3, lonM3, NF3, w3, dudx3, dvdx3, dudy3, dvdy3, zM3, timeM3, step, dt)
+        zM4, lonM4, latM4, timeM4, k4, l4, ug3, vg3, wg3, ome3, dk3 ,dl3 = runge_kutta4.runge_step(H3, gome, k, k3, u3, l, l3, v3, latM, lonM, NF3, w3, dudx3, dvdx3, dudy3, dvdy3, zM, timeM, step, dt, f3, b3, Cs2 = Cs23)
         if np.isnan(zM4):
-            print("dame")  
-        dudx4, dudy4, dvdx4, dvdy4, u4, v4, w4, NF4, H4 = lunge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time, z, lonM4, latM4, timeM4, zM4, dlat, dlon)
+            return zM4, zM4, zM4, zM4, zM4, u1, v1, w1, NF1, ome1, H1, Cs21
+        f4, b4, dudx4, dvdx4, dudy4, dvdy4, u4, v4, w4, NF4, H4, Cs24 = runge_kutta4.data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time, z, lonM4, latM4, timeM4, zM4, dlat, dlon, Cs2 = Cs2)
         step = 4
-        ug4, vg4, wg4, ome4, dk4 ,dl4 = lunge_kutta4.lunge_step(H4, gome, k4, u4, l4, v4, latM4, lonM4, NF4, w4, dudx4, dvdx4, dudy4, dvdy4, zM4, timeM4, step, dt)
+        ug4, vg4, wg4, ome4, dk4 ,dl4 = runge_kutta4.runge_step(H4, gome, k, k4, u4, l, l4, v4, latM, lonM, NF4, w4, dudx4, dvdx4, dudy4, dvdy4, zM, timeM, step, dt, f4, b4, Cs2 = Cs24)
         dy = 1./6. * (vg1 + vg2 * 2. + vg3 * 2. + vg4) * (dt)/r * 180 /np.pi
-        dx = 1./6. * (ug1 + ug2 * 2. + ug3 * 2. + ug4) * (dt)/r * np.abs(np.cos((latM + dy * 0.5)/180 * np.pi)) * 180 /np.pi
+        dx = 1./6. * (ug1 + ug2 * 2. + ug3 * 2. + ug4) * (dt)/(r * np.abs(np.cos((latM + dy * 0.5)/180 * np.pi))) * 180 /np.pi
         dz = 1./6. * (wg1 + wg2 * 2. + wg3 * 2. + wg4) * (dt)
         dk = 1./6. * (dk1 + dk2 * 2. + dk3 * 2. + dk4) * (dt)
         dl = 1./6. * (dl1 + dl2 * 2. + dl3 * 2. + dl4) * (dt)
-        if np.isnan(dz):
-            print("dame")
-        if dx > 1:
-            print("yabaiii")
-        if Cs2 is not None:
-            return dy, dx, dz, dk, dl, u1, v1, w1, NF1, ome1, H1,Cs21
-        else:
-            return dy, dx, dz, dk, dl, u1, v1, w1, NF1, ome1, H1
+            
+        return dy, dx, dz, dk, dl, u1, v1, w1, NF1, ome1, H1, Cs21
+
     
     def data_interpo(dudx, dvdx, dudy, dvdy, u, v, w, NF, H, lon, lat, time, z, lonM, latM, timeM, zM, dlat, dlon, Cs2 = None):
         import numpy as np
         from scipy.interpolate import interpn  
         zmin = np.nanmax(np.where(z[np.argmin(np.abs(np.round(time - np.min(timeM)))), :, int(np.round((90 - latM)/dlat)), int(np.round(lonM/dlon))] <= zM)) - 1
-        zmax = np.nanmin(np.where(z[np.argmin(np.abs(np.round(time - np.min(timeM)))), :, int(np.round((90 - latM)/dlat)), int(np.round(lonM/dlon))] >= zM)) + 1
+        zmax = np.nanmin(np.where(z[np.argmin(np.abs(np.round(time - np.min(timeM)))), :, int(np.round((90 - latM)/dlat)), int(np.round(lonM/dlon))] > zM)) + 1
 
+        f = O2 * np.sin(latM/180*np.pi)
+        b = O2 * np.cos(latM/180*np.pi)/r
+        
         num = zmax - zmin + 1 
         dudxM1 = np.zeros(num)
         dvdxM1 = np.copy(dudxM1)
@@ -122,40 +117,35 @@ class lunge_kutta4:
         HM = np.interp(zM,  zM1,  HM1)
         if Cs2 is not None:
             Cs2M = np.interp(zM,  zM1, Cs2M1)
-            return dudxM, dvdxM, dudyM, dvdyM, uM, vM, wM, NFM, HM, Cs2M
-        return dudxM, dvdxM, dudyM, dvdyM, uM, vM, wM, NFM, HM
-   
-<<<<<<< HEAD:runge_kutta4.py
-    def runge_step(H, gome, k, u, l, v, latM, lonM, NF, w, dudx, dvdx, dudy, dvdy, zM, timeM, step, dt):
-=======
-    def lunge_step(H, gome, k, u, l, v, latM, lonM, NF, w, dudx, dvdx, dudy, dvdy, zM, timeM, step, dt, Cs2 = np.nan):
->>>>>>> fb946b6 (Update local files):lunge_kutta4.py
+        else:
+            Cs2M = None
+        return f, b, dudxM, dvdxM, dudyM, dvdyM, uM, vM, wM, NFM, HM, Cs2M
 
+   
+    def runge_step(H, gome, k, kn, u, l, ln, v, latM, lonM, NF, w, dudx, dvdx, dudy, dvdy, zM, timeM, step, dt, f, b, Cs2 = None):
         dt_2 = dt * 0.5
         dt7200 = dt/7200.
-        ome = np.abs(gome - (k * u + l * v))
-        f = O2 * np.sin(latM/180*np.pi)
-        b = O2 * np.cos(latM/180*np.pi)/r
-        m = -np.sqrt(meteo_para.cal_dis_ral( k, l, ome, f, NF, H))
-        dk = -(k * dudx + l * dvdx)
-        dl = -(k * dudy + l * dvdy + b * f/ome)
-        ug, vg, wg = meteo_para.group_velocity( k, l, m, H, NF, ome, w, f, u, v)
-        #-------second step------------------
+        ome = np.abs(gome - (kn * u + ln * v))
+        m = -np.sqrt(meteo_para.cal_dis_ral( kn, ln, ome, f, NF, H))
+        dk = -(kn * dudx + ln * dvdx)
+        dl = -(kn * dudy + ln * dvdy + b * f/ome)
+        ug, vg, wg = meteo_para.group_velocity( kn, ln, m, H, NF, ome, w, f, u, v, cs2=Cs2)
+        #-------intermediate RK step---------
         if step == 1 or step == 2:
             zM2 = zM + dt_2 * wg
-            lonM2 = lonM + dt_2 * ug / (r * abs(np.cos(latM + dt_2 * vg / r)))
-            latM2 = latM + dt_2 * vg * vg/r
+            lonM2 = lonM + np.degrees(dt_2 * ug / (r * abs(np.cos(np.radians(latM) + dt_2 * vg / r))))
+            latM2 = latM + np.degrees(dt_2 * vg /r)
             timeM2 = timeM + dt7200
             k2 = k + dk * dt_2
             l2 = l + dl * dt_2
             return zM2, lonM2, latM2, timeM2, k2, l2, ug, vg, wg, ome, dk ,dl
         elif step == 3:
-            zM2 = zM + dt_2 * wg
-            lonM2 = lonM + dt_2 * ug / (r * abs(np.cos(latM + dt_2 * vg / r)))
-            latM2 = latM + dt_2 * vg * vg/r
-            timeM2 = timeM + dt7200
-            k2 = k + dk * dt_2
-            l2 = l + dl * dt_2
+            zM2 = zM + dt * wg
+            lonM2 = lonM + np.degrees(dt * ug / (r * abs(np.cos(np.radians(latM) + dt_2 * vg / r))))
+            latM2 = latM + np.degrees(dt * vg /r)
+            timeM2 = timeM + dt7200 * 2
+            k2 = k + dk * dt
+            l2 = l + dl * dt
             return zM2, lonM2, latM2, timeM2, k2, l2, ug, vg, wg, ome, dk ,dl
         elif step == 4:
             if np.isnan(wg):
@@ -167,8 +157,8 @@ class lunge_kutta4:
         import numpy as np
         from scipy.interpolate import interpn  
        
-        du = np.gradient(uM, zM[0:-1])
-        dv = np.gradient(vM, zM[0:-1])
+        du = np.gradient(uM, zM)
+        dv = np.gradient(vM, zM)
         rhoM = np.copy(uM)
         TM = np.copy(uM)
         
@@ -183,7 +173,7 @@ class lunge_kutta4:
         for i in range(len(rhoM)):
             zmin = np.nanmax(np.where(z[int(np.round(timeM[i] - np.min(timeM))), :, int(np.round(latM[i]/dlat)), int(np.round(lonM[i]/dlon))] <= zM[i]))
             try:
-                zmax = np.nanmin(np.where(z[int(np.round(timeM[i]- np.min(timeM))), :, int(np.round(latM[i]/dlat)), int(np.round(lonM[i]/dlon))] >= zM[i])) 
+                zmax = np.nanmin(np.where(z[int(np.round(timeM[i]- np.min(timeM))), :, int(np.round(latM[i]/dlat)), int(np.round(lonM[i]/dlon))] > zM[i])) 
                 rhoM1 = np.zeros(2)    
                 TM1 = np.zeros(2)      
                 zM1 = np.zeros(2)         
@@ -192,13 +182,13 @@ class lunge_kutta4:
                     TM1[i_high - zmin] = interpn([time, 90 - lat, lon], T[:,i_high,:,:], [timeM[i], 90 - latM[i], lonM[i]])         
                     zM1[i_high - zmin] = interpn([time, 90 - lat, lon], z[:,i_high,:,:], [timeM[i], 90 - latM[i], lonM[i]])
                 rhoM[i] = np.exp(np.interp(zM[i], zM1, np.log(rhoM1)))
-                TM[i] = np.exp(np.interp(zM[i], zM1, TM1))
+                TM[i] = np.interp(zM[i], zM1, TM1)
             except:
                 print("exceeding the upper boundary of the model")
                 rhoM[i] = np.nan
                 TM[i] = np.nan
         f = O2 * np.sin(np.radians(latM))
-        mM = -np.sqrt(meteo_para.cal_dis_ral( kM[0:-1], lM[0:-1], omeM, f[0:-1], NF, HM))
+        mM = -np.sqrt(meteo_para.cal_dis_ral( kM, lM, omeM, f, NF, HM))
 
         for SH1 in range(NSH1):
             if SH1 != 0:
